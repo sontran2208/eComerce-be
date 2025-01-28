@@ -2,6 +2,7 @@ import { Category } from 'src/categories/entities/category.entity';
 import { OrdersProducts } from 'src/orders/entities/orders-products.entity';
 import { Review } from 'src/reviews/entities/review.entity';
 import { User } from 'src/users/entities/user.entity';
+import { UploadImg } from 'src/upload-img/entities/upload-img.entity';
 import {
   Column,
   CreateDateColumn,
@@ -29,9 +30,6 @@ export class Product {
   @Column()
   stock: number;
 
-  @Column('simple-array')
-  image: string[];
-
   @CreateDateColumn()
   createdAt: Date;
 
@@ -49,4 +47,7 @@ export class Product {
 
   @OneToMany(() => OrdersProducts, (op) => op.product)
   products: OrdersProducts[];
+
+  @OneToMany(() => UploadImg, (img) => img.product, { eager: true })
+  images: UploadImg[];
 }

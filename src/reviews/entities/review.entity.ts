@@ -5,6 +5,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -30,6 +31,10 @@ export class Review {
   @ManyToOne((type) => User, (user) => user.reviews)
   user: User;
 
+  @Column()
+  productId: number;
+
   @ManyToOne((type) => Product, (product) => product.reviews)
+  @JoinColumn({ name: 'productId' })
   product: Product;
 }

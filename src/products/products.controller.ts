@@ -20,7 +20,14 @@ import { User } from 'src/users/entities/user.entity';
 import { Product } from './entities/product.entity';
 import { SerializeIncludes } from 'src/utility/interceptors/serialize.interceptor';
 import { ProductsDto } from './dto/products.dto';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiQuery, ApiParam } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiQuery,
+  ApiParam,
+} from '@nestjs/swagger';
 import { PaginationResultDto } from 'src/utility/pagination/pagination-result.dto';
 import { PaginationDto } from 'src/utility/pagination/pagination.dto';
 import { FilterProductDto } from './dto/filter-product.dto';
@@ -33,7 +40,11 @@ export class ProductsController {
   @Post()
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new product' })
-  @ApiResponse({ status: 201, description: 'Product successfully created.', type: Product })
+  @ApiResponse({
+    status: 201,
+    description: 'Product successfully created.',
+    type: Product,
+  })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   async create(
     @Body() createProductDto: CreateProductDto,
@@ -43,24 +54,48 @@ export class ProductsController {
   }
 
   @SerializeIncludes(ProductsDto)
-  @Get()
+  @Get('with-filters')
   @ApiOperation({ summary: 'Get products with query' })
-  @ApiQuery({ name: 'limit', required: false, description: 'Limit the number of products returned' })
-  @ApiQuery({ name: 'offset', required: false, description: 'Offset the start of the product list returned' })
-  @ApiResponse({ status: 200, description: 'Return all products.', type: [ProductsDto] })
-  async findAllWithFiltersAndPagination(
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Limit the number of products returned',
+  })
+  @ApiQuery({
+    name: 'offset',
+    required: false,
+    description: 'Offset the start of the product list returned',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Return all products.',
+    type: [ProductsDto],
+  })
+  async findAllWithFilters(
     @Query() filterDto: FilterProductDto,
-    @Query() paginationDto: PaginationDto,
-  ): Promise<PaginationResultDto<Product>> {
-    return this.productsService.findAllWithFiltersAndPagination(filterDto, paginationDto);
+  ): Promise<Product[]> {
+    return this.productsService.findAllWithFilters(filterDto);
   }
 
-
+  @Get()
+  @ApiOperation({ summary: 'Get all products' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return all products.',
+    type: [ProductsDto],
+  })
+  async findAll(): Promise<Product[]> {
+    return await this.productsService.findAll();
+  }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a product by ID' })
   @ApiParam({ name: 'id', description: 'The ID of the product to retrieve' })
-  @ApiResponse({ status: 200, description: 'Return the product by ID.', type: Product })
+  @ApiResponse({
+    status: 200,
+    description: 'Return the product by ID.',
+    type: Product,
+  })
   @ApiResponse({ status: 404, description: 'Product not found.' })
   async findOne(@Param('id') id: string): Promise<Product> {
     return await this.productsService.findOne(+id);
@@ -71,7 +106,11 @@ export class ProductsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update a product' })
   @ApiParam({ name: 'id', description: 'The ID of the product to update' })
-  @ApiResponse({ status: 200, description: 'Product successfully updated.', type: Product })
+  @ApiResponse({
+    status: 200,
+    description: 'Product successfully updated.',
+    type: Product,
+  })
   @ApiResponse({ status: 404, description: 'Product not found.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   async update(

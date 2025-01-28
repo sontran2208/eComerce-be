@@ -7,6 +7,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { OrdersModule } from './orders/orders.module';
+import { UploadImgModule } from './upload-img/upload-img.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { OrdersModule } from './orders/orders.module';
     ProductsModule,
     ReviewsModule,
     OrdersModule,
+    UploadImgModule,
   ],
   controllers: [],
   providers: [],

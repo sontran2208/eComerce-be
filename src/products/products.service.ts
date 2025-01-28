@@ -42,27 +42,26 @@ export class ProductsService {
     return await this.productRepository.save(product);
   }
 
-  async findAllWithFiltersAndPagination(
-    filterDto: FilterProductDto,
-    paginationDto: PaginationDto,
-  ): Promise<PaginationResultDto<Product>> {
-    const { page, limit } = paginationDto;
-    const { search, category, minPrice, maxPrice, minRating, maxRating } = filterDto;
+  async findAllWithFilters(filterDto: FilterProductDto): Promise<Product[]> {
+    const { search, category, minPrice, maxPrice, minRating, maxRating } =
+      filterDto;
 
-    const queryBuilder = this.productRepository.createQueryBuilder('product')
+    const queryBuilder = this.productRepository
+      .createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.images', 'uploads-img')
       .leftJoin('product.reviews', 'review')
       .addSelect([
         'COUNT(review.id) AS reviewCount',
         'AVG(review.rating)::numeric(10,2) AS avgRating',
       ])
-      .groupBy('product.id, category.id')
-      .skip((page - 1) * limit)
-      .take(limit);
+      .groupBy('product.id, category.id, uploads-img.id');
 
-    // Áp dụng các bộ lọc tương tự như ví dụ trước đây
+    // Áp dụng các bộ lọc
     if (search) {
-      queryBuilder.andWhere('product.title LIKE :title', { title: `%${search}%` });
+      queryBuilder.andWhere('product.title LIKE :title', {
+        title: `%${search}%`,
+      });
     }
 
     if (category) {
@@ -85,11 +84,18 @@ export class ProductsService {
       queryBuilder.andHaving('AVG(review.rating) <= :maxRating', { maxRating });
     }
 
-    const [products, total] = await queryBuilder.getManyAndCount();
-
-    return new PaginationResultDto(products, total, page, limit);
+    // Lấy tất cả sản phẩm mà không áp dụng phân trang
+    return await queryBuilder.getMany();
   }
 
+  async findAll() {
+    return await this.productRepository.find({
+      relations: {
+        addedBy: true,
+        category: true,
+      },
+    });
+  }
   async findOne(id: number) {
     const product = await this.productRepository.findOne({
       where: { id: id },
