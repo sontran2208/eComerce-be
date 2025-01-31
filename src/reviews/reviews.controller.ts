@@ -36,8 +36,7 @@ import { PaginationResultDto } from 'src/utility/pagination/pagination-result.dt
 @ApiTags('reviews')
 export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
-
-  @UseGuards(AuthorGuard([Roles.ADMIN]), AuthenGuard)
+  @UseGuards(AuthenGuard)
   @Post()
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new review' })
@@ -66,7 +65,10 @@ export class ReviewsController {
     @Query('productId') productId: number,
     @Query() paginationDto: PaginationDto,
   ): Promise<PaginationResultDto<Review>> {
-    return await this.reviewsService.findAllByProduct(+productId, paginationDto);
+    return await this.reviewsService.findAllByProduct(
+      +productId,
+      paginationDto,
+    );
   }
 
   @Get(':id')
@@ -93,7 +95,10 @@ export class ReviewsController {
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 400, description: 'Bad Request.' })
   @ApiResponse({ status: 403, description: 'Unauthorized.' })
-  async update(@Param('id') id: string, @Body() updateReviewDto: UpdateReviewDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateReviewDto: UpdateReviewDto,
+  ) {
     return await this.reviewsService.update(+id, updateReviewDto);
   }
   @UseGuards(AuthorGuard([Roles.ADMIN]), AuthenGuard)

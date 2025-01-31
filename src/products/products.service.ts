@@ -93,6 +93,7 @@ export class ProductsService {
       relations: {
         addedBy: true,
         category: true,
+        images: true,
       },
     });
   }
@@ -102,6 +103,8 @@ export class ProductsService {
       relations: {
         addedBy: true,
         category: true,
+        images: true,
+        reviews: true,
       },
       select: {
         addedBy: {
