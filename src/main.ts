@@ -14,7 +14,7 @@ async function bootstrap() {
 
   // Cấu hình CORS
   app.enableCors({
-    origin: 'http://localhost:3000', // Địa chỉ frontend được phép
+    origin: 'tiembanhbucker.netlify.app', // Địa chỉ frontend được phép
     methods: 'GET,POST,PUT,DELETE', // Các phương thức HTTP được phép
     credentials: true, // Nếu cần cookie hoặc xác thực
   });
