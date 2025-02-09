@@ -31,6 +31,7 @@ import {
 import { PaginationResultDto } from 'src/utility/pagination/pagination-result.dto';
 import { PaginationDto } from 'src/utility/pagination/pagination.dto';
 import { FilterProductDto } from './dto/filter-product.dto';
+import { PaginationResult } from 'src/utility/common/pagination/pagination.interface';
 @Controller('products')
 @ApiTags('products')
 export class ProductsController {
@@ -53,7 +54,6 @@ export class ProductsController {
     return await this.productsService.create(createProductDto, currentUser);
   }
 
-  @SerializeIncludes(ProductsDto)
   @Get('with-filters')
   @ApiOperation({ summary: 'Get products with query' })
   @ApiQuery({
@@ -71,10 +71,12 @@ export class ProductsController {
     description: 'Return all products.',
     type: [ProductsDto],
   })
+  @SerializeIncludes(ProductsDto)
   async findAllWithFilters(
     @Query() filterDto: FilterProductDto,
-  ): Promise<Product[]> {
-    return this.productsService.findAllWithFilters(filterDto);
+    @Query() paginationDto: PaginationDto,
+  ): Promise<PaginationResult<Product>> {
+    return this.productsService.findAllWithFilters(filterDto, paginationDto);
   }
 
   @Get()
@@ -86,6 +88,12 @@ export class ProductsController {
   })
   async findAll(): Promise<Product[]> {
     return await this.productsService.findAll();
+  }
+
+  @Get('with-pagination')
+  @ApiOperation({ summary: 'Get all products with pagination' })
+  async findProductWithPagination(@Query() paginationDto: PaginationDto) {
+    return await this.productsService.findAllWithPagination(paginationDto);
   }
 
   @Get(':id')

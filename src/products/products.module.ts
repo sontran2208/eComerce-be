@@ -5,10 +5,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { CategoriesModule } from 'src/categories/categories.module';
 import { OrdersModule } from 'src/orders/orders.module';
+import { PaginationService } from 'src/utility/common/pagination/pagination.service';
 
 @Module({
   controllers: [ProductsController],
-  providers: [ProductsService],
+  providers: [ProductsService, PaginationService],
   imports: [
     TypeOrmModule.forFeature([Product]),
     CategoriesModule,

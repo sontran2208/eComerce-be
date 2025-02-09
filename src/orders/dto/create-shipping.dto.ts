@@ -6,7 +6,7 @@ export class CreateShippingDto {
     description: 'The phone number of the recipient',
     example: '123-456-7890',
   })
-  @IsNotEmpty({ message: 'phone is required' })
+  @IsNotEmpty({ message: 'SĐT đang trống !!!' })
   @IsString({ message: 'phone must be a string' })
   phone: string;
 
@@ -23,7 +23,7 @@ export class CreateShippingDto {
     description: 'The address of the recipient',
     example: '123 Main St',
   })
-  @IsNotEmpty({ message: 'address is required' })
+  @IsNotEmpty({ message: 'Địa chỉ đang trống !!!' })
   @IsString({ message: 'address must be a string' })
   address: string;
 
@@ -31,7 +31,7 @@ export class CreateShippingDto {
     description: 'The city of the recipient',
     example: 'Hanoi',
   })
-  @IsNotEmpty({ message: 'city is required' })
+  @IsNotEmpty({ message: 'Thành Phố đang trống !!!' })
   @IsString({ message: 'city must be a string' })
   city: string;
 
@@ -47,7 +47,7 @@ export class CreateShippingDto {
     description: 'The state of the recipient',
     example: 'Hanoi',
   })
-  @IsNotEmpty({ message: 'state is required' })
+  @IsNotEmpty({ message: 'Tỉnh đang trống !!!' })
   @IsString({ message: 'state must be a string' })
   state: string;
 
@@ -55,7 +55,7 @@ export class CreateShippingDto {
     description: 'The country of the recipient',
     example: 'VietNam',
   })
-  @IsNotEmpty({ message: 'country is required' })
+  @IsNotEmpty({ message: 'Quốc Gia đang trống !!!' })
   @IsString({ message: 'country must be a string' })
   country: string;
 }

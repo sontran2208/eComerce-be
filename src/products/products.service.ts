@@ -18,6 +18,8 @@ import { OrdersService } from 'src/orders/orders.service';
 import { PaginationDto } from 'src/utility/pagination/pagination.dto';
 import { PaginationResultDto } from 'src/utility/pagination/pagination-result.dto';
 import { FilterProductDto } from './dto/filter-product.dto';
+import { PaginationResult } from 'src/utility/common/pagination/pagination.interface';
+import { PaginationService } from 'src/utility/common/pagination/pagination.service';
 
 @Injectable()
 export class ProductsService {
@@ -27,6 +29,7 @@ export class ProductsService {
     private readonly categoryService: CategoriesService,
     @Inject(forwardRef(() => OrdersService))
     private readonly ordersService: OrdersService,
+    private readonly paginationService: PaginationService,
   ) {}
 
   async create(
@@ -42,50 +45,82 @@ export class ProductsService {
     return await this.productRepository.save(product);
   }
 
-  async findAllWithFilters(filterDto: FilterProductDto): Promise<Product[]> {
+  async findAllWithFilters(
+    filterDto: FilterProductDto,
+    paginationDto: PaginationDto,
+  ): Promise<PaginationResult<Product>> {
     const { search, category, minPrice, maxPrice, minRating, maxRating } =
       filterDto;
+    const { page, limit } = paginationDto;
 
-    const queryBuilder = this.productRepository
+    // Base Query không có GROUP BY
+    const baseQuery = this.productRepository
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
       .leftJoinAndSelect('product.images', 'uploads-img')
-      .leftJoin('product.reviews', 'review')
-      .addSelect([
-        'COUNT(review.id) AS reviewCount',
-        'AVG(review.rating)::numeric(10,2) AS avgRating',
-      ])
-      .groupBy('product.id, category.id, uploads-img.id');
+      .leftJoin('product.reviews', 'review');
 
     // Áp dụng các bộ lọc
     if (search) {
-      queryBuilder.andWhere('product.title LIKE :title', {
-        title: `%${search}%`,
-      });
+      baseQuery.andWhere(
+        'LOWER(unaccent(product.title)) ILIKE LOWER(unaccent(:title))',
+        {
+          title: `%${search}%`,
+        },
+      );
     }
 
     if (category) {
-      queryBuilder.andWhere('category.id = :id', { id: category });
+      baseQuery.andWhere('category.id = :id', { id: category });
     }
 
     if (minPrice) {
-      queryBuilder.andWhere('product.price >= :minPrice', { minPrice });
+      baseQuery.andWhere('product.price >= :minPrice', { minPrice });
     }
 
     if (maxPrice) {
-      queryBuilder.andWhere('product.price <= :maxPrice', { maxPrice });
+      baseQuery.andWhere('product.price <= :maxPrice', { maxPrice });
     }
 
-    if (minRating) {
-      queryBuilder.andHaving('AVG(review.rating) >= :minRating', { minRating });
-    }
+    // Lấy tổng số sản phẩm (không áp dụng phân trang)
+    const total = await baseQuery.getCount();
 
-    if (maxRating) {
-      queryBuilder.andHaving('AVG(review.rating) <= :maxRating', { maxRating });
-    }
+    // Áp dụng pagination
+    const data = await baseQuery
+      .take(limit)
+      .skip((page - 1) * limit)
+      .getMany();
 
-    // Lấy tất cả sản phẩm mà không áp dụng phân trang
-    return await queryBuilder.getMany();
+    // Nếu có filter rating, cần tính trung bình thủ công
+    let ratingsQuery = this.productRepository
+      .createQueryBuilder('product')
+      .leftJoin('product.reviews', 'review')
+      .select([
+        'product.id AS productId',
+        'COUNT(review.id) AS reviewCount',
+        'AVG(review.rating)::numeric(10,2) AS avgRating',
+      ])
+      .groupBy('product.id');
+
+    const ratingsData = await ratingsQuery.getRawMany();
+
+    // Gán rating vào data
+    const finalData = data.map((product) => {
+      const ratingInfo = ratingsData.find((r) => r.productId === product.id);
+      return {
+        ...product,
+        reviewCount: ratingInfo ? Number(ratingInfo.reviewCount) : 0,
+        avgRating: ratingInfo ? Number(ratingInfo.avgRating) : null,
+      };
+    });
+
+    return {
+      data: finalData,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async findAll() {
@@ -97,6 +132,23 @@ export class ProductsService {
       },
     });
   }
+
+  async findAllWithPagination(
+    paginationDto: PaginationDto,
+  ): Promise<PaginationResult<Product>> {
+    const { page, limit } = paginationDto;
+    const [data, total] = await this.productRepository.findAndCount({
+      relations: {
+        addedBy: true,
+        category: true,
+        images: true,
+      },
+      take: limit,
+      skip: (page - 1) * limit,
+    });
+    return this.paginationService.getPaginationMeta(data, total, page, limit);
+  }
+
   async findOne(id: number) {
     const product = await this.productRepository.findOne({
       where: { id: id },
@@ -121,7 +173,17 @@ export class ProductsService {
     if (!product) {
       throw new NotFoundException('Product Not Found');
     }
-    return product;
+    const averageRating = await this.productRepository
+      .createQueryBuilder('product')
+      .leftJoin('product.reviews', 'review')
+      .where('product.id = :id', { id })
+      .select('AVG(review.rating)', 'averageRating')
+      .getRawOne();
+
+    return {
+      ...product,
+      averageRating: parseFloat(averageRating?.averageRating) || 0,
+    };
   }
 
   async update(
