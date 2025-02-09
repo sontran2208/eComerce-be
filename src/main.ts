@@ -37,6 +37,6 @@ async function bootstrap() {
   SwaggerModule.setup('docs', app, document);
 
   // Start server
-  await app.listen(process.env.NODE_PORT || 3001); // Mặc định chạy trên cổng 3001
+  await app.listen(process.env.NODE_PORT || 10000); // Mặc định chạy trên cổng 3001
 }
 bootstrap();
