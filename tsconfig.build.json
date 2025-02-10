@@ -1,5 +1,11 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["src", "db/migrations", "db"],
-  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "module": "CommonJS",
+    "target": "ES6"
+  },
+  "include": ["src/**/*", "db/**/*"],
+  "exclude": ["node_modules", "dist", "test", "**/*.spec.ts"]
 }
