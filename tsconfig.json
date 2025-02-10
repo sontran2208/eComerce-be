@@ -17,5 +17,7 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false
-  }
+  },
+  "include": ["src", "db/migrations"], // Thêm db/migrations vào đây
+  "exclude": ["node_modules", "dist"]
 }
