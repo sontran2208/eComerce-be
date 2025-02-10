@@ -13,7 +13,7 @@ import { Repository } from 'typeorm';
 import { CategoriesService } from 'src/categories/categories.service';
 import { User } from 'src/users/entities/user.entity';
 import { OrderStatus } from 'src/orders/enums/order-status.enum';
-import dataSource from 'db/data-source';
+
 import { OrdersService } from 'src/orders/orders.service';
 import { PaginationDto } from 'src/utility/pagination/pagination.dto';
 import { PaginationResultDto } from 'src/utility/pagination/pagination-result.dto';
